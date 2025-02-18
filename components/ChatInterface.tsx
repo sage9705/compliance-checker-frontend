@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, Loader2 } from 'lucide-react';
 
 interface Message {
     content: string;
@@ -67,16 +66,18 @@ const ChatInterface = () => {
     };
 
     return (
-        <Card className="h-full">
-            <CardHeader className="border-b bg-card px-6">
+        <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="border-b border-[#2C2D32] p-4">
                 <div className="flex items-center gap-2">
-                    <Bot className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg font-semibold">Compliance Assistant</CardTitle>
+                    <Bot className="h-5 w-5 text-blue-400" />
+                    <h2 className="text-lg font-semibold text-white">Compliance Assistant</h2>
                 </div>
-            </CardHeader>
-            <CardContent className="p-0 flex flex-col h-[calc(100vh-16rem)]">
-                {/* Messages Area */}
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto">
+                <div className="space-y-6 p-4">
                     {messages.map((message, index) => (
                         <div
                             key={index}
@@ -84,53 +85,73 @@ const ChatInterface = () => {
                                 }`}
                         >
                             <div className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full ${message.role === 'user'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
+                                ? 'bg-blue-600'
+                                : 'bg-[#2C2D32]'
                                 }`}>
                                 {message.role === 'user'
-                                    ? <User className="h-5 w-5" />
-                                    : <Bot className="h-5 w-5" />
+                                    ? <User className="h-4 w-4 text-white" />
+                                    : <Bot className="h-4 w-4 text-blue-400" />
                                 }
                             </div>
                             <div className={`flex flex-col gap-1 ${message.role === 'user' ? 'items-end' : ''
                                 }`}>
-                                <div className={`rounded-lg px-4 py-2 max-w-[80%] ${message.role === 'user'
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted'
+                                <div className={`rounded-lg px-4 py-2 text-sm max-w-[100%] ${message.role === 'user'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-[#2C2D32] text-gray-200'
                                     }`}>
-                                    <p className="text-sm">{message.content}</p>
+                                    {message.content}
                                 </div>
-                                <span className="text-xs text-muted-foreground px-4">
-                                    {message.timestamp.toLocaleTimeString()}
+                                <span className="text-xs text-gray-500 px-2">
+                                    {message.timestamp.toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
                                 </span>
                             </div>
                         </div>
                     ))}
+                    {isLoading && (
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2C2D32]">
+                                <Bot className="h-4 w-4 text-blue-400" />
+                            </div>
+                            <div className="flex items-center gap-2 rounded-lg bg-[#2C2D32] px-4 py-2 text-sm text-gray-200">
+                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                                <span>Thinking...</span>
+                            </div>
+                        </div>
+                    )}
                     <div ref={messagesEndRef} />
                 </div>
+            </div>
 
-                {/* Input Area */}
-                <div className="border-t bg-background p-6">
-                    <form onSubmit={handleSubmit} className="flex gap-4">
-                        <input
-                            type="text"
-                            value={inputMessage}
-                            onChange={(e) => setInputMessage(e.target.value)}
-                            placeholder="Type your message..."
-                            className="flex-1 rounded-md border bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            disabled={isLoading}
-                        />
-                        <Button
-                            type="submit"
-                            disabled={isLoading || !inputMessage.trim()}
-                            size="icon"
-                        >
+            {/* Input Area */}
+            <div className="border-t border-[#2C2D32] p-4">
+                <form onSubmit={handleSubmit} className="flex gap-3">
+                    <input
+                        type="text"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        className="flex-1 rounded-md bg-[#1A1B1E] border border-[#2C2D32] px-4 py-2 text-sm text-white 
+                                 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        disabled={isLoading}
+                    />
+                    <Button
+                        type="submit"
+                        disabled={isLoading || !inputMessage.trim()}
+                        size="icon"
+                        className="bg-[#2C2D32] hover:bg-[#383A3F] text-white"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
                             <Send className="h-4 w-4" />
-                        </Button>
-                    </form>
-                </div>
-            </CardContent>
-        </Card>
+                        )}
+                    </Button>
+                </form>
+            </div>
+        </div>
     );
 };
 

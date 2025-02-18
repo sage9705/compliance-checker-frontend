@@ -6,12 +6,11 @@ import ComplianceResult from '@/components/ComplianceResult';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Download, Upload } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FileWithPath } from 'react-dropzone';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { formatFileSize } from '@/lib/fileSize';
 import ChatInterface from '@/components/ChatInterface';
-import { Tooltip, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 
 interface ComplianceData {
@@ -167,66 +166,59 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">
-              MiFID II Compliance Checker
-            </h1>
-            <TooltipProvider>
-              <Tooltip>
-                {/* <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <HelpCircle className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger> */}
-                <TooltipContent>
-                  <p>Upload audio files for MiFID II compliance analysis</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
+    <div className="h-screen flex flex-col bg-[#25262B] text-white">
+      {/* Top Navigation */}
+      <nav className="bg-[#25262B] border-b border-[#2C2D32] px-4 sm:px-6 py-3 flex-none">
+        <h1 className="text-xl font-semibold">MiFID II Compliance Checker</h1>
       </nav>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - File Processing */}
-          <div className="space-y-6">
-            <Card className="border-2 border-dashed">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="h-5 w-5 text-primary" />
-                  Upload Files
-                </CardTitle>
-                <CardDescription>
-                  Upload your audio files for compliance analysis
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ErrorBoundary>
-                  <FileUpload onFileSelect={handleFileSelect} />
-                </ErrorBoundary>
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Left Panel - File Selection */}
+        <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-r border-[#2C2D32] bg-[#25262B]">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Configuration</h2>
+              <p className="text-sm text-gray-400 mb-4">
+                Select audio files for analysis
+              </p>
 
-                {files.length > 0 && (
-                  <div className="mt-6">
-                    <Button
-                      onClick={processFiles}
-                      disabled={processing}
-                      className="w-full"
-                    >
-                      {processing
-                        ? `Processing ${currentFile || '...'}`
-                        : `Analyze ${files.length} File${files.length !== 1 ? 's' : ''}`}
-                    </Button>
+              <ErrorBoundary>
+                <FileUpload onFileSelect={handleFileSelect} />
+              </ErrorBoundary>
+            </div>
+
+            {files.length > 0 && (
+              <div className="space-y-4">
+                <div className="bg-[#2C2D32] rounded-lg p-4">
+                  <h3 className="text-sm font-medium mb-2">Selected Files</h3>
+                  <div className="space-y-2">
+                    {files.map((file, index) => (
+                      <div key={index} className="flex items-center text-sm">
+                        <FileText className="w-4 h-4 mr-2 text-blue-400" />
+                        <span className="truncate flex-1">{file.name}</span>
+                        <span className="text-gray-400 ml-2">
+                          {formatFileSize(file.size / 1024)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+
+                <Button
+                  onClick={processFiles}
+                  disabled={processing}
+                  className="w-full truncate bg-blue-600 hover:bg-blue-700"
+                >
+                  {processing
+                    ? `Processing...`
+                    : `Analyze ${files.length} File${files.length !== 1 ? 's' : ''}`}
+                </Button>
 
                 {processing && (
-                  <div className="mt-4">
-                    <Progress value={progress} className="w-full" />
-                    <p className="text-sm text-center mt-2 text-gray-500">
+                  <div>
+                    <Progress value={progress} className="mb-2" />
+                    <p className="text-sm text-center text-gray-400">
                       {Math.round(progress)}% Complete
                       {currentFile && (
                         <span className="block text-xs mt-1">
@@ -236,13 +228,18 @@ export default function Home() {
                     </p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            )}
+          </div>
+        </div>
 
+        {/* Right Panel - Results */}
+        <div className="flex-1 bg-[#1A1B1E] overflow-y-auto">
+          <div className="p-4 sm:p-6">
             {errors.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2 mb-6">
                 {errors.map((error, index) => (
-                  <Alert key={index} variant="destructive">
+                  <Alert key={index} variant="destructive" className="bg-red-900/20 border-red-900">
                     <AlertDescription>
                       <div className="font-medium">{error.fileName}</div>
                       <div className="text-sm">{error.error}</div>
@@ -256,38 +253,42 @@ export default function Home() {
             )}
 
             {results.length > 0 && (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle className="text-xl">
+              <div>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <h2 className="text-xl font-semibold">
                     Analysis Results ({results.length} of {files.length})
-                  </CardTitle>
+                  </h2>
                   <Button
-                    variant="outline"
                     onClick={downloadCSV}
                     disabled={processing}
-                    className="ml-auto"
+                    className="w-full sm:w-auto bg-[#2C2D32] hover:bg-[#383A3F] text-gray-300 border-none transition-colors"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Export CSV
+                    Export Results
                   </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                </div>
+
+                <div className="space-y-4">
                   {results.map((result, index) => (
                     <ErrorBoundary key={`${result.filename}-${index}`}>
-                      <ComplianceResult result={result} />
+                      <ComplianceResult result={result} darkMode />
                     </ErrorBoundary>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+            )}
+
+            {!results.length && !errors.length && (
+              <div className="flex items-center justify-center min-h-[200px] lg:min-h-[400px] text-gray-400">
+                <p>Upload and analyze files to see results</p>
+              </div>
             )}
           </div>
-
-          {/* Right Column - Chat Interface */}
-          <div className="lg:h-[calc(100vh-10rem)] sticky top-8">
-            <ChatInterface />
-          </div>
         </div>
-      </main>
+        <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-r border-[#2C2D32] bg-[#25262B]">
+          <ChatInterface />
+        </div>
+      </div>
     </div>
   );
 }

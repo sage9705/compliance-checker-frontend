@@ -15,15 +15,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full`}>
-        <div className="min-h-full">
-          {/* Main Content */}
-          <main className="py-6">
-            <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
-          </main>
-        </div>
+      <body className={`${inter.className} h-full bg-[#1A1B1E] text-white antialiased`}>
+        {children}
       </body>
     </html>
   );
