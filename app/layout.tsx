@@ -18,7 +18,6 @@ export default function RootLayout({
       <body className={inter.className}>
         <nav className="bg-blue-600 text-white p-4">
           <div className="container mx-auto flex items-center">
-
             <span className="text-xl font-semibold">
               MiFID II Compliance Checker
             </span>
