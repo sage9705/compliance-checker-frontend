@@ -6,11 +6,13 @@ import ComplianceResult from '@/components/ComplianceResult';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Download } from 'lucide-react';
+import { Download, Upload, HelpCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FileWithPath } from 'react-dropzone';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import ChatInterface from '@/components/ChatInterface';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 interface ComplianceData {
   status: string;
@@ -84,42 +86,26 @@ export default function Home() {
         const formData = new FormData();
         formData.append('file', file);
 
-        // Log the request details for debugging
-        console.log('Sending request for file:', file.name);
-        console.log('File type:', file.type);
-        console.log('File size:', file.size);
-
         try {
-          // Direct request to backend without proxy
           const response = await fetch('http://localhost:8000/api/v1/compliance/analyze', {
             method: 'POST',
             body: formData,
-            // Add CORS headers
             mode: 'cors',
             headers: {
               'Accept': 'application/json',
             },
           });
 
-          // Log the response for debugging
-          console.log('Response status:', response.status);
-          console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
           if (!response.ok) {
             const responseText = await response.text();
-            console.error('Error response body:', responseText);
             throw new Error(responseText || `HTTP error! status: ${response.status}`);
           }
 
           const result = await response.json();
           newResults.push(result);
         } catch (error) {
-          console.error(`Detailed error for ${file.name}:`, error);
-          newErrors.push({
-            fileName: file.name,
-            error: error instanceof Error ? error.message : 'Failed to process file',
-            details: error instanceof Error ? error.stack : undefined
-          });
+          console.error(`Error processing ${file.name}:`, error);
+          newErrors.push(handleError(file.name, error));
         }
 
         setProgress(((i + 1) / files.length) * 100);
@@ -131,6 +117,7 @@ export default function Home() {
       setCurrentFile("");
     }
   };
+
   const downloadCSV = () => {
     if (results.length === 0) return;
 
@@ -180,18 +167,42 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">
-          MiFID II Compliance Checker
-        </h1>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">
+              MiFID II Compliance Checker
+            </h1>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <HelpCircle className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Upload audio files for MiFID II compliance analysis</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      </nav>
 
+      <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - File Upload and Results */}
+          {/* Left Column - File Processing */}
           <div className="space-y-6">
-            <Card>
+            <Card className="border-2 border-dashed">
               <CardHeader>
-                <CardTitle className="text-xl">Upload Files</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-primary" />
+                  Upload Files
+                </CardTitle>
+                <CardDescription>
+                  Upload your audio files for compliance analysis
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ErrorBoundary>
@@ -217,7 +228,11 @@ export default function Home() {
                     <Progress value={progress} className="w-full" />
                     <p className="text-sm text-center mt-2 text-gray-500">
                       {Math.round(progress)}% Complete
-                      {currentFile && <span className="block text-xs">Processing: {currentFile}</span>}
+                      {currentFile && (
+                        <span className="block text-xs mt-1">
+                          Processing: {currentFile}
+                        </span>
+                      )}
                     </p>
                   </div>
                 )}
@@ -232,7 +247,7 @@ export default function Home() {
                       <div className="font-medium">{error.fileName}</div>
                       <div className="text-sm">{error.error}</div>
                       {error.details && (
-                        <div className="text-xs mt-1 text-gray-200">{error.details}</div>
+                        <div className="text-xs mt-1 opacity-80">{error.details}</div>
                       )}
                     </AlertDescription>
                   </Alert>
@@ -241,36 +256,38 @@ export default function Home() {
             )}
 
             {results.length > 0 && (
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">
-                    Results ({results.length} of {files.length} files)
-                  </h2>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <CardTitle className="text-xl">
+                    Analysis Results ({results.length} of {files.length})
+                  </CardTitle>
                   <Button
                     variant="outline"
                     onClick={downloadCSV}
                     disabled={processing}
+                    className="ml-auto"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Download CSV
+                    Export CSV
                   </Button>
-                </div>
-                <div className="space-y-4">
+                </CardHeader>
+                <CardContent className="space-y-4">
                   {results.map((result, index) => (
                     <ErrorBoundary key={`${result.filename}-${index}`}>
                       <ComplianceResult result={result} />
                     </ErrorBoundary>
                   ))}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             )}
           </div>
 
-          <div className="h-full">
+          {/* Right Column - Chat Interface */}
+          <div className="lg:h-[calc(100vh-10rem)] sticky top-8">
             <ChatInterface />
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
