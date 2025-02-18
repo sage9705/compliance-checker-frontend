@@ -2,6 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
+import { formatFileSize } from '@/lib/fileSize';
+
 
 interface ComplianceData {
     status: string;
@@ -75,12 +77,14 @@ const ComplianceResult: React.FC<ComplianceResultProps> = ({ result }) => {
                                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{result.transcription}</p>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 text-sm text-gray-500">
+                            <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
                                 <div>
-                                    <span className="font-medium">File Size:</span> {result.file_size} KB
+                                    <span className="font-medium">File Size:</span>{' '}
+                                    {formatFileSize(result.file_size)}
                                 </div>
                                 <div>
-                                    <span className="font-medium">Processing Time:</span> {result.processing_time}s
+                                    <span className="font-medium">Processing Time:</span>{' '}
+                                    {result.processing_time.toFixed(2)}s
                                 </div>
                             </div>
                         </div>
