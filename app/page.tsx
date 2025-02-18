@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { Download } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FileWithPath } from 'react-dropzone';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import ChatInterface from '@/components/ChatInterface';
 
 interface ComplianceData {
   status: string;
@@ -178,79 +180,97 @@ export default function Home() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">
           MiFID II Compliance Checker
         </h1>
 
-        <ErrorBoundary>
-          <FileUpload onFileSelect={handleFileSelect} />
-        </ErrorBoundary>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - File Upload and Results */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Upload Files</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ErrorBoundary>
+                  <FileUpload onFileSelect={handleFileSelect} />
+                </ErrorBoundary>
 
-        {files.length > 0 && (
-          <div className="mt-6">
-            <Button
-              onClick={processFiles}
-              disabled={processing}
-              className="w-full max-w-xs mx-auto block"
-            >
-              {processing
-                ? `Processing ${currentFile || '...'}`
-                : `Analyze ${files.length} File${files.length !== 1 ? 's' : ''}`}
-            </Button>
-          </div>
-        )}
+                {files.length > 0 && (
+                  <div className="mt-6">
+                    <Button
+                      onClick={processFiles}
+                      disabled={processing}
+                      className="w-full"
+                    >
+                      {processing
+                        ? `Processing ${currentFile || '...'}`
+                        : `Analyze ${files.length} File${files.length !== 1 ? 's' : ''}`}
+                    </Button>
+                  </div>
+                )}
 
-        {processing && (
-          <div className="mt-4">
-            <Progress value={progress} className="w-full" />
-            <p className="text-sm text-center mt-2 text-gray-500">
-              {Math.round(progress)}% Complete
-              {currentFile && <span className="block text-xs">Processing: {currentFile}</span>}
-            </p>
-          </div>
-        )}
+                {processing && (
+                  <div className="mt-4">
+                    <Progress value={progress} className="w-full" />
+                    <p className="text-sm text-center mt-2 text-gray-500">
+                      {Math.round(progress)}% Complete
+                      {currentFile && <span className="block text-xs">Processing: {currentFile}</span>}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-        {errors.length > 0 && (
-          <div className="mt-4 space-y-2">
-            {errors.map((error, index) => (
-              <Alert key={index} variant="destructive">
-                <AlertDescription>
-                  <div className="font-medium">{error.fileName}</div>
-                  <div className="text-sm">{error.error}</div>
-                  {error.details && (
-                    <div className="text-xs mt-1 text-gray-200">{error.details}</div>
-                  )}
-                </AlertDescription>
-              </Alert>
-            ))}
-          </div>
-        )}
+            {errors.length > 0 && (
+              <div className="space-y-2">
+                {errors.map((error, index) => (
+                  <Alert key={index} variant="destructive">
+                    <AlertDescription>
+                      <div className="font-medium">{error.fileName}</div>
+                      <div className="text-sm">{error.error}</div>
+                      {error.details && (
+                        <div className="text-xs mt-1 text-gray-200">{error.details}</div>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                ))}
+              </div>
+            )}
 
-        {results.length > 0 && (
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">
-                Results ({results.length} of {files.length} files processed)
-              </h2>
-              <Button
-                variant="outline"
-                onClick={downloadCSV}
-                disabled={processing}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download CSV
-              </Button>
-            </div>
-            {results.map((result, index) => (
-              <ErrorBoundary key={`${result.filename}-${index}`}>
-                <ComplianceResult result={result} />
-              </ErrorBoundary>
-            ))}
+            {results.length > 0 && (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">
+                    Results ({results.length} of {files.length} files)
+                  </h2>
+                  <Button
+                    variant="outline"
+                    onClick={downloadCSV}
+                    disabled={processing}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download CSV
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {results.map((result, index) => (
+                    <ErrorBoundary key={`${result.filename}-${index}`}>
+                      <ComplianceResult result={result} />
+                    </ErrorBoundary>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          <div className="h-full">
+            <ChatInterface />
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

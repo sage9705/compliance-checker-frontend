@@ -14,16 +14,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <nav className="bg-blue-600 text-white p-4">
-          <div className="container mx-auto flex items-center">
-            <span className="text-xl font-semibold">
-              MiFID II Compliance Checker
-            </span>
-          </div>
-        </nav>
-        {children}
+    <html lang="en" className="h-full">
+      <body className={`${inter.className} h-full`}>
+        <div className="min-h-full">
+          {/* Main Content */}
+          <main className="py-6">
+            <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+              {children}
+            </div>
+          </main>
+        </div>
       </body>
     </html>
   );
