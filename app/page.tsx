@@ -6,12 +6,12 @@ import ComplianceResult from '@/components/ComplianceResult';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Download, Upload, HelpCircle } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FileWithPath } from 'react-dropzone';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import ChatInterface from '@/components/ChatInterface';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 
 interface ComplianceData {
@@ -176,11 +176,11 @@ export default function Home() {
             </h1>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                {/* <TooltipTrigger asChild>
                   <Button variant="outline" size="icon">
                     <HelpCircle className="h-5 w-5" />
                   </Button>
-                </TooltipTrigger>
+                </TooltipTrigger> */}
                 <TooltipContent>
                   <p>Upload audio files for MiFID II compliance analysis</p>
                 </TooltipContent>
