@@ -14,9 +14,8 @@ import ChatInterface from '@/components/ChatInterface';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import Image from "next/image"
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { useTheme } from 'next-themes';
+import ThemedLogo from '@/components/ThemedLogo';
 
 interface ComplianceData {
   status: string;
@@ -46,7 +45,6 @@ const COMPLIANCE_REGULATIONS = [
 ];
 
 export default function Home() {
-  const { theme } = useTheme();
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [results, setResults] = useState<TranscriptionResult[]>([]);
   const [processing, setProcessing] = useState(false);
@@ -196,12 +194,13 @@ export default function Home() {
       {/* Top Navigation */}
       <nav className="bg-card border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Image
+          {/* <Image
             src={theme === 'dark' ? "/4th-IR_white_Horizontal.png" : "/4th-IR_Horizontal.png"}
             alt="Fourth IR Logo"
             width={120}
             height={80}
-          />
+          /> */}
+          <ThemedLogo />
           <h1 className="text-xl font-semibold">Compliance Checker</h1>
         </div>
         <ThemeToggle />
