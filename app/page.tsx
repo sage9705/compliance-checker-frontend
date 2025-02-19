@@ -6,12 +6,15 @@ import ComplianceResult from '@/components/ComplianceResult';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, Key, Book } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FileWithPath } from 'react-dropzone';
 import { formatFileSize } from '@/lib/fileSize';
 import ChatInterface from '@/components/ChatInterface';
-
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import Image from "next/image"
 
 interface ComplianceData {
   status: string;
@@ -33,6 +36,13 @@ interface ProcessingError {
   details?: string;
 }
 
+const COMPLIANCE_REGULATIONS = [
+  { value: 'mifid2', label: 'MiFID II' },
+  { value: 'gdpr', label: 'GDPR' },
+  { value: 'hipaa', label: 'HIPAA' },
+  { value: 'pci', label: 'PCI DSS' },
+];
+
 export default function Home() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [results, setResults] = useState<TranscriptionResult[]>([]);
@@ -40,6 +50,8 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [errors, setErrors] = useState<ProcessingError[]>([]);
   const [currentFile, setCurrentFile] = useState<string>("");
+  const [accessKey, setAccessKey] = useState<string>("");
+  const [regulation, setRegulation] = useState<string>("mifid2");
 
   const handleFileSelect = (selectedFiles: FileWithPath[]) => {
     setFiles(selectedFiles);
@@ -71,6 +83,15 @@ export default function Home() {
   };
 
   const processFiles = async () => {
+    if (!accessKey.trim()) {
+      setErrors([{
+        fileName: 'Configuration',
+        error: 'Access Key Required',
+        details: 'Please enter your access key before processing files'
+      }]);
+      return;
+    }
+
     setProcessing(true);
     setProgress(0);
     setErrors([]);
@@ -84,6 +105,7 @@ export default function Home() {
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('regulation', regulation);
 
         try {
           const response = await fetch('http://localhost:8000/api/v1/compliance/analyze', {
@@ -92,6 +114,7 @@ export default function Home() {
             mode: 'cors',
             headers: {
               'Accept': 'application/json',
+              'X-Access-Key': accessKey,
             },
           });
 
@@ -168,18 +191,77 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-col bg-[#25262B] text-white">
       {/* Top Navigation */}
-      <nav className="bg-[#25262B] border-b border-[#2C2D32] px-4 sm:px-6 py-3 flex-none">
-        <h1 className="text-xl font-semibold">MiFID II Compliance Checker</h1>
+      <nav className="bg-[#25262B] border-b border-[#2C2D32] px-4 sm:px-6 py-3 flex items-center space-x-4">
+        <Image
+          src="/4th-IR_white_Horizontal.png"
+          alt="Fourth IR Logo"
+          width={120}
+          height={80}
+        />
+        <h1 className="text-xl text-white">Compliance Checker</h1>
       </nav>
+
+
 
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+
         {/* Left Panel - File Selection */}
         <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-r border-[#2C2D32] bg-[#25262B]">
-          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-2">Configuration</h2>
-              <p className="text-sm text-gray-400 mb-4">
+
+          <div className="p-4 sm:p-6 space-y-6">
+            <Card className="bg-[#2C2D32] border-[#383A3F]">
+              <CardContent className="p-4 space-y-4">
+                <h2 className="text-lg text-white font-semibold">Configurations</h2>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Access Key
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type="password"
+                        value={accessKey}
+                        onChange={(e) => setAccessKey(e.target.value)}
+                        className="bg-[#1A1B1E] border-[#383A3F] text-white pl-9"
+                        placeholder="Enter your access key"
+                        showPasswordToggle={true}
+                      />
+                      <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Compliance Regulation
+                    </label>
+                    <div className="relative">
+                      <Select value={regulation} onValueChange={setRegulation}>
+                        <SelectTrigger className="w-full bg-[#1A1B1E] border-[#383A3F] text-white pl-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#2C2D32] border-[#383A3F]">
+                          {COMPLIANCE_REGULATIONS.map((reg) => (
+                            <SelectItem
+                              key={reg.value}
+                              value={reg.value}
+                              className="text-white hover:bg-[#383A3F] focus:bg-[#383A3F]"
+                            >
+                              {reg.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Book className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-2">
+              <p className="text-sm text-gray-400">
                 Select audio files for analysis
               </p>
 
@@ -190,20 +272,22 @@ export default function Home() {
 
             {files.length > 0 && (
               <div className="space-y-4">
-                <div className="bg-[#2C2D32] rounded-lg p-4">
-                  <h3 className="text-sm font-medium mb-2">Selected Files</h3>
-                  <div className="space-y-2">
-                    {files.map((file, index) => (
-                      <div key={index} className="flex items-center text-sm">
-                        <FileText className="w-4 h-4 mr-2 text-blue-400" />
-                        <span className="truncate flex-1">{file.name}</span>
-                        <span className="text-gray-400 ml-2">
-                          {formatFileSize(file.size / 1024)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <Card className="bg-[#2C2D32] border-[#383A3F]">
+                  <CardContent className="p-4">
+                    <h3 className="text-sm font-medium mb-2">Selected Files</h3>
+                    <div className="space-y-2">
+                      {files.map((file, index) => (
+                        <div key={index} className="flex items-center text-sm">
+                          <FileText className="w-4 h-4 mr-2 text-blue-400" />
+                          <span className="truncate flex-1">{file.name}</span>
+                          <span className="text-gray-400 ml-2">
+                            {formatFileSize(file.size / 1024)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
 
                 <Button
                   onClick={processFiles}
@@ -285,6 +369,8 @@ export default function Home() {
             )}
           </div>
         </div>
+
+        {/* Chat Interface */}
         <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-r border-[#2C2D32] bg-[#25262B]">
           <ChatInterface />
         </div>
