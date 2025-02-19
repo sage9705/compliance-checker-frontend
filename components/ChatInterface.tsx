@@ -45,23 +45,37 @@ const ChatInterface = () => {
         setIsLoading(true);
 
         try {
-            // TODO: Replace with actual API call to your backend
-            const response = await new Promise(resolve =>
-                setTimeout(() => resolve({
-                    content: "I'm a placeholder response. In the real implementation, this would be connected to your backend API.",
-                    role: 'assistant',
-                    timestamp: new Date(),
-                }), 1000)
-            );
+            const response = await fetch('http://localhost:8000/api/v1/compliance/followup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: inputMessage,
+                }),
+            });
 
-            setMessages(prev => [...prev, response as Message]);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            const assistantMessage: Message = {
+                content: data.answer,
+                role: 'assistant',
+                timestamp: new Date(),
+            };
+
+            setMessages(prev => [...prev, assistantMessage]);
         } catch (error) {
             console.error('Error sending message:', error);
-            setMessages(prev => [...prev, {
+            const errorMessage: Message = {
                 content: 'Sorry, I encountered an error. Please try again.',
                 role: 'assistant',
                 timestamp: new Date(),
-            }]);
+            };
+            setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
         }
