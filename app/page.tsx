@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from "next/image"
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useTheme } from 'next-themes';
 
 interface ComplianceData {
   status: string;
@@ -44,6 +46,7 @@ const COMPLIANCE_REGULATIONS = [
 ];
 
 export default function Home() {
+  const { theme } = useTheme();
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [results, setResults] = useState<TranscriptionResult[]>([]);
   const [processing, setProcessing] = useState(false);
@@ -189,34 +192,33 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#25262B] text-white">
+    <div className="h-screen flex flex-col bg-background text-foreground">
       {/* Top Navigation */}
-      <nav className="bg-[#25262B] border-b border-[#2C2D32] px-4 sm:px-6 py-3 flex items-center space-x-4">
-        <Image
-          src="/4th-IR_white_Horizontal.png"
-          alt="Fourth IR Logo"
-          width={120}
-          height={80}
-        />
-        <h1 className="text-xl text-white">Compliance Checker</h1>
+      <nav className="bg-card border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Image
+            src={theme === 'dark' ? "/4th-IR_white_Horizontal.png" : "/4th-IR_Horizontal.png"}
+            alt="Fourth IR Logo"
+            width={120}
+            height={80}
+          />
+          <h1 className="text-xl font-semibold">Compliance Checker</h1>
+        </div>
+        <ThemeToggle />
       </nav>
-
-
 
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-
         {/* Left Panel - File Selection */}
-        <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-r border-[#2C2D32] bg-[#25262B]">
-
+        <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-r border-border bg-card">
           <div className="p-4 sm:p-6 space-y-6">
-            <Card className="bg-[#2C2D32] border-[#383A3F]">
+            <Card>
               <CardContent className="p-4 space-y-4">
-                <h2 className="text-lg text-white font-semibold">Configurations</h2>
+                <h2 className="text-lg font-semibold">Configurations</h2>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">
+                    <label className="text-sm font-medium">
                       Access Key
                     </label>
                     <div className="relative">
@@ -224,36 +226,35 @@ export default function Home() {
                         type="password"
                         value={accessKey}
                         onChange={(e) => setAccessKey(e.target.value)}
-                        className="bg-[#1A1B1E] border-[#383A3F] text-white pl-9"
+                        className="pl-9"
                         placeholder="Enter your access key"
                         showPasswordToggle={true}
                       />
-                      <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">
+                    <label className="text-sm font-medium">
                       Compliance Regulation
                     </label>
                     <div className="relative">
                       <Select value={regulation} onValueChange={setRegulation}>
-                        <SelectTrigger className="w-full bg-[#1A1B1E] border-[#383A3F] text-white pl-9">
+                        <SelectTrigger className="w-full pl-9">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#2C2D32] border-[#383A3F]">
+                        <SelectContent>
                           {COMPLIANCE_REGULATIONS.map((reg) => (
                             <SelectItem
                               key={reg.value}
                               value={reg.value}
-                              className="text-white hover:bg-[#383A3F] focus:bg-[#383A3F]"
                             >
                               {reg.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <Book className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Book className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     </div>
                   </div>
                 </div>
@@ -261,7 +262,7 @@ export default function Home() {
             </Card>
 
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Select audio files for analysis
               </p>
 
@@ -272,15 +273,15 @@ export default function Home() {
 
             {files.length > 0 && (
               <div className="space-y-4">
-                <Card className="bg-[#2C2D32] border-[#383A3F]">
+                <Card>
                   <CardContent className="p-4">
                     <h3 className="text-sm font-medium mb-2">Selected Files</h3>
                     <div className="space-y-2">
                       {files.map((file, index) => (
                         <div key={index} className="flex items-center text-sm">
-                          <FileText className="w-4 h-4 mr-2 text-blue-400" />
+                          <FileText className="w-4 h-4 mr-2 text-primary" />
                           <span className="truncate flex-1">{file.name}</span>
-                          <span className="text-gray-400 ml-2">
+                          <span className="text-muted-foreground ml-2">
                             {formatFileSize(file.size / 1024)}
                           </span>
                         </div>
@@ -292,7 +293,7 @@ export default function Home() {
                 <Button
                   onClick={processFiles}
                   disabled={processing}
-                  className="w-full truncate bg-blue-600 hover:bg-blue-700"
+                  className="w-full truncate"
                 >
                   {processing
                     ? `Processing...`
@@ -302,7 +303,7 @@ export default function Home() {
                 {processing && (
                   <div>
                     <Progress value={progress} className="mb-2" />
-                    <p className="text-sm text-center text-gray-400">
+                    <p className="text-sm text-center text-muted-foreground">
                       {Math.round(progress)}% Complete
                       {currentFile && (
                         <span className="block text-xs mt-1">
@@ -318,12 +319,12 @@ export default function Home() {
         </div>
 
         {/* Right Panel - Results */}
-        <div className="flex-1 bg-[#1A1B1E] overflow-y-auto">
+        <div className="flex-1 bg-background overflow-y-auto">
           <div className="p-4 sm:p-6">
             {errors.length > 0 && (
               <div className="space-y-2 mb-6">
                 {errors.map((error, index) => (
-                  <Alert key={index} variant="destructive" className="bg-red-900/20 border-red-900">
+                  <Alert key={index} variant="destructive">
                     <AlertDescription>
                       <div className="font-medium">{error.fileName}</div>
                       <div className="text-sm">{error.error}</div>
@@ -345,7 +346,8 @@ export default function Home() {
                   <Button
                     onClick={downloadCSV}
                     disabled={processing}
-                    className="w-full sm:w-auto bg-[#2C2D32] hover:bg-[#383A3F] text-gray-300 border-none transition-colors"
+                    variant="outline"
+                    className="w-full sm:w-auto"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Export Results
@@ -355,7 +357,7 @@ export default function Home() {
                 <div className="space-y-4">
                   {results.map((result, index) => (
                     <ErrorBoundary key={`${result.filename}-${index}`}>
-                      <ComplianceResult result={result} darkMode />
+                      <ComplianceResult result={result} />
                     </ErrorBoundary>
                   ))}
                 </div>
@@ -363,7 +365,7 @@ export default function Home() {
             )}
 
             {!results.length && !errors.length && (
-              <div className="flex items-center justify-center min-h-[200px] lg:min-h-[400px] text-gray-400">
+              <div className="flex items-center justify-center min-h-[200px] lg:min-h-[400px] text-muted-foreground">
                 <p>Upload and analyze files to see results</p>
               </div>
             )}
@@ -371,7 +373,7 @@ export default function Home() {
         </div>
 
         {/* Chat Interface */}
-        <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-r border-[#2C2D32] bg-[#25262B]">
+        <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-l border-border bg-card">
           <ChatInterface />
         </div>
       </div>

@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 interface Message {
     content: string;
@@ -68,40 +70,48 @@ const ChatInterface = () => {
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="border-b border-[#2C2D32] p-4">
+            <div className="border-b border-border p-4 bg-card">
                 <div className="flex items-center gap-2">
-                    <Bot className="h-5 w-5 text-blue-400" />
-                    <h2 className="text-lg font-semibold text-white">Compliance Assistant</h2>
+                    <Bot className="h-5 w-5 text-primary" />
+                    <h2 className="text-lg font-semibold">Compliance Assistant</h2>
                 </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto bg-background">
                 <div className="space-y-6 p-4">
                     {messages.map((message, index) => (
                         <div
                             key={index}
-                            className={`flex items-start gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''
-                                }`}
+                            className={cn(
+                                "flex items-start gap-3",
+                                message.role === 'user' && "flex-row-reverse"
+                            )}
                         >
-                            <div className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full ${message.role === 'user'
-                                ? 'bg-blue-600'
-                                : 'bg-[#2C2D32]'
-                                }`}>
+                            <div className={cn(
+                                "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full",
+                                message.role === 'user'
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-primary"
+                            )}>
                                 {message.role === 'user'
-                                    ? <User className="h-4 w-4 text-white" />
-                                    : <Bot className="h-4 w-4 text-blue-400" />
+                                    ? <User className="h-4 w-4" />
+                                    : <Bot className="h-4 w-4" />
                                 }
                             </div>
-                            <div className={`flex flex-col gap-1 ${message.role === 'user' ? 'items-end' : ''
-                                }`}>
-                                <div className={`rounded-lg px-4 py-2 text-sm max-w-[100%] ${message.role === 'user'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-[#2C2D32] text-gray-200'
-                                    }`}>
+                            <div className={cn(
+                                "flex flex-col gap-1",
+                                message.role === 'user' && "items-end"
+                            )}>
+                                <div className={cn(
+                                    "rounded-lg px-4 py-2 text-sm max-w-[100%]",
+                                    message.role === 'user'
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-muted text-foreground"
+                                )}>
                                     {message.content}
                                 </div>
-                                <span className="text-xs text-gray-500 px-2">
+                                <span className="text-xs text-muted-foreground px-2">
                                     {message.timestamp.toLocaleTimeString([], {
                                         hour: '2-digit',
                                         minute: '2-digit'
@@ -112,11 +122,11 @@ const ChatInterface = () => {
                     ))}
                     {isLoading && (
                         <div className="flex items-start gap-3">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2C2D32]">
-                                <Bot className="h-4 w-4 text-blue-400" />
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                                <Bot className="h-4 w-4 text-primary" />
                             </div>
-                            <div className="flex items-center gap-2 rounded-lg bg-[#2C2D32] px-4 py-2 text-sm text-gray-200">
-                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                            <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-sm text-foreground">
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                 <span>Thinking...</span>
                             </div>
                         </div>
@@ -126,22 +136,21 @@ const ChatInterface = () => {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-[#2C2D32] p-4">
+            <div className="border-t border-border p-4 bg-card">
                 <form onSubmit={handleSubmit} className="flex gap-3">
-                    <input
+                    <Input
                         type="text"
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         placeholder="Type your message..."
-                        className="flex-1 rounded-md bg-[#1A1B1E] border border-[#2C2D32] px-4 py-2 text-sm text-white 
-                                 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="flex-1"
                         disabled={isLoading}
                     />
                     <Button
                         type="submit"
                         disabled={isLoading || !inputMessage.trim()}
                         size="icon"
-                        className="bg-[#2C2D32] hover:bg-[#383A3F] text-white"
+                        variant="secondary"
                     >
                         {isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
