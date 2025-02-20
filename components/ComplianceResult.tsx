@@ -1,11 +1,14 @@
 import React from 'react';
-import { CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
 import { formatFileSize } from '@/lib/fileSize';
 import { cn } from '@/lib/utils';
 
+
+type ComplianceStatus = 'Compliant' | 'Non-compliant' | 'Partially compliant';
+
 interface ComplianceData {
-    status: string;
+    status: ComplianceStatus;
     explanation: string;
 }
 
@@ -23,29 +26,55 @@ interface ComplianceResultProps {
 }
 
 const ComplianceResult: React.FC<ComplianceResultProps> = ({ result }) => {
-    const getStatusIcon = (status: string) => {
-        switch (status.toLowerCase()) {
-            case 'compliant':
+    const normalizeStatus = (status: string): ComplianceStatus => {
+        const normalizedStatus = status.trim().toLowerCase();
+
+        if (normalizedStatus.includes('non-compliant')) {
+            return 'Non-compliant';
+        } else if (normalizedStatus.includes('partially')) {
+            return 'Partially compliant';
+        } else if (normalizedStatus.includes('compliant')) {
+            return 'Compliant';
+        }
+
+        return 'Non-compliant';
+    };
+
+    const getStatusIcon = (status: ComplianceStatus) => {
+        switch (status) {
+            case 'Compliant':
                 return <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400" />;
-            case 'partially compliant':
+            case 'Partially compliant':
                 return <AlertTriangle className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />;
-            case 'non-compliant':
+            case 'Non-compliant':
                 return <XCircle className="w-5 h-5 text-red-500 dark:text-red-400" />;
-            default:
-                return <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
         }
     };
 
-    const getStatusColor = (status: string) => {
-        const baseColors = {
-            compliant: 'bg-green-50 border-green-200 dark:bg-green-500/10 dark:border-green-500/20',
-            'partially compliant': 'bg-yellow-50 border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/20',
-            'non-compliant': 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20',
-            default: 'bg-gray-50 border-gray-200 dark:bg-gray-500/10 dark:border-gray-500/20'
-        };
-
-        return baseColors[status.toLowerCase() as keyof typeof baseColors] || baseColors.default;
+    const getStatusColor = (status: ComplianceStatus) => {
+        switch (status) {
+            case 'Compliant':
+                return 'bg-green-50 border-green-200 dark:bg-green-500/10 dark:border-green-500/20';
+            case 'Partially compliant':
+                return 'bg-yellow-50 border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/20';
+            case 'Non-compliant':
+                return 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20';
+        }
     };
+
+    const getStatusTextColor = (status: ComplianceStatus) => {
+        switch (status) {
+            case 'Compliant':
+                return 'text-green-700 dark:text-green-400';
+            case 'Partially compliant':
+                return 'text-yellow-700 dark:text-yellow-400';
+            case 'Non-compliant':
+                return 'text-red-700 dark:text-red-400';
+        }
+    };
+
+
+    const normalizedStatus = normalizeStatus(result.compliance_data.status);
 
     return (
         <ErrorBoundary>
@@ -60,14 +89,23 @@ const ComplianceResult: React.FC<ComplianceResultProps> = ({ result }) => {
                         </span>
                     </div>
 
-                    <div className={cn("rounded-lg border p-4 mb-4", getStatusColor(result.compliance_data.status))}>
+                    <div className={cn(
+                        "rounded-lg border p-4 mb-4",
+                        getStatusColor(normalizedStatus)
+                    )}>
                         <div className="flex items-center gap-2 mb-2">
-                            {getStatusIcon(result.compliance_data.status)}
-                            <span className="font-medium">
-                                {result.compliance_data.status}
+                            {getStatusIcon(normalizedStatus)}
+                            <span className={cn(
+                                "font-medium",
+                                getStatusTextColor(normalizedStatus)
+                            )}>
+                                {normalizedStatus}
                             </span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className={cn(
+                            "text-sm",
+                            getStatusTextColor(normalizedStatus)
+                        )}>
                             {result.compliance_data.explanation}
                         </p>
                     </div>
