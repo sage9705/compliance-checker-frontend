@@ -5,7 +5,7 @@ import { ThemeProvider } from 'next-themes';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'MiFID II Compliance Checker',
+  title: '4th-IR Compliance Checker',
   description: 'Audio transcription and compliance analysis tool for MiFID II regulations',
 };
 

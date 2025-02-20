@@ -194,12 +194,6 @@ export default function Home() {
       {/* Top Navigation */}
       <nav className="bg-card border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {/* <Image
-            src={theme === 'dark' ? "/4th-IR_white_Horizontal.png" : "/4th-IR_Horizontal.png"}
-            alt="Fourth IR Logo"
-            width={120}
-            height={80}
-          /> */}
           <ThemedLogo />
           <h1 className="text-xl font-semibold">Compliance Checker</h1>
         </div>
@@ -373,7 +367,7 @@ export default function Home() {
 
         {/* Chat Interface */}
         <div className="w-full lg:w-[400px] flex-none border-b lg:border-b-0 lg:border-l border-border bg-card">
-          <ChatInterface />
+          <ChatInterface regulation={regulation} />
         </div>
       </div>
     </div>

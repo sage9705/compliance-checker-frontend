@@ -10,14 +10,22 @@ interface Message {
     timestamp: Date;
 }
 
-const ChatInterface = () => {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            content: "Hello! I'm your compliance assistant. I can help you understand your compliance results and answer questions about MiFID II regulations. How can I help you today?",
-            role: 'assistant',
-            timestamp: new Date(),
-        },
-    ]);
+interface ChatInterfaceProps {
+    regulation: string;
+}
+
+const getRegulationName = (value: string): string => {
+    const regulationMap: { [key: string]: string } = {
+        'mifid2': 'MiFID II',
+        'gdpr': 'GDPR',
+        'hipaa': 'HIPAA',
+        'pci': 'PCI DSS',
+    };
+    return regulationMap[value] || value.toUpperCase();
+};
+
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ regulation }) => {
+    const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -29,6 +37,16 @@ const ChatInterface = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Reset chat when regulation changes
+    useEffect(() => {
+        const regulationName = getRegulationName(regulation);
+        setMessages([{
+            content: `Hello! I'm your compliance assistant specializing in ${regulationName} regulations. How can I help you today?`,
+            role: 'assistant',
+            timestamp: new Date(),
+        }]);
+    }, [regulation]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,14 +67,17 @@ const ChatInterface = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({
                     question: inputMessage,
+                    regulation: regulation,
                 }),
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const errorData = await response.text();
+                throw new Error(errorData || 'Network response was not ok');
             }
 
             const data = await response.json();
@@ -68,14 +89,15 @@ const ChatInterface = () => {
             };
 
             setMessages(prev => [...prev, assistantMessage]);
-        } catch (error) {
-            console.error('Error sending message:', error);
-            const errorMessage: Message = {
-                content: 'Sorry, I encountered an error. Please try again.',
+        } catch (err) {
+            console.error('Error sending message:', err);
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+            const assistantMessage: Message = {
+                content: `Sorry, I encountered an error: ${errorMessage}. Please try again.`,
                 role: 'assistant',
                 timestamp: new Date(),
             };
-            setMessages(prev => [...prev, errorMessage]);
+            setMessages(prev => [...prev, assistantMessage]);
         } finally {
             setIsLoading(false);
         }
@@ -83,15 +105,15 @@ const ChatInterface = () => {
 
     return (
         <div className="flex flex-col h-full">
-            {/* Header */}
             <div className="border-b border-border p-4 bg-card">
                 <div className="flex items-center gap-2">
                     <Bot className="h-5 w-5 text-primary" />
-                    <h2 className="text-lg font-semibold">Compliance Assistant</h2>
+                    <h2 className="text-lg font-semibold">
+                        {getRegulationName(regulation)} Assistant
+                    </h2>
                 </div>
             </div>
 
-            {/* Messages Area */}
             <div className="flex-1 overflow-y-auto bg-background">
                 <div className="space-y-6 p-4">
                     {messages.map((message, index) => (
@@ -149,7 +171,6 @@ const ChatInterface = () => {
                 </div>
             </div>
 
-            {/* Input Area */}
             <div className="border-t border-border p-4 bg-card">
                 <form onSubmit={handleSubmit} className="flex gap-3">
                     <Input
